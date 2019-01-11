@@ -1,0 +1,12 @@
+namespace com.pcthingz.libmedium.test
+class TestDaemon
+
+event tick(count: uint32)
+
+exception YeetException
+
+method hello_world(): binary
+
+method error_maker()
+
+method delay_echo(message: binary): binary
