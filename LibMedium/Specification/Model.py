@@ -11,6 +11,7 @@ class SpecificationModel:
 
         self.namespace = ""
         self.class_name = ""
+        self.socket_location = None
         self.events = []
         self.exceptions = []
         self.methods = []
@@ -47,6 +48,11 @@ class SpecificationModel:
                 if(self.class_name != ""):
                     raise Exception("Class name can not be defined more than once")
                 self.class_name = self._read_until("\n")
+
+            if(label == "socket"):
+                if(self.socket_location):
+                    raise Exception("Socket location can not be defined more than once")
+                self.socket_location = self._read_until("\n")
 
             if(label == "event"):
                 name = self._read_until("(")

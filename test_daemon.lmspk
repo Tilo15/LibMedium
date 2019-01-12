@@ -5,8 +5,20 @@ event tick(count: uint32)
 
 exception YeetException
 
+model TestModel{
+    message: string
+    count: uint32
+}
+
+model TestModelWrapper{
+    name: string
+    value: TestModel
+}
+
 method hello_world(): binary
 
 method error_maker()
 
 method delay_echo(message: binary): binary
+
+method wrapper(data: TestModel, name: string): TestModelWrapper

@@ -13,3 +13,8 @@ def throw(error: RemoteCallException):
 		raise ERROR_MAP[error.error_no](str(error))
 	raise(error)
 
+REV_ERROR_MAP = {
+	YeetException: 1
+}
+
+

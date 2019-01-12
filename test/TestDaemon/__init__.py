@@ -37,6 +37,12 @@ class TestDaemonConnection:
 		except RemoteCallException as e:
 			TestDaemon.Exceptions.throw(e)
 	
+	def wrapper(self, data: TestDaemon.Models.TestModel, name: str) -> TestDaemon.Models.TestModelWrapper:
+		try:
+			return TestDaemon.Models.TestModelWrapper.deserialise(self._medium.invoke(b'wrapper', data.serialise(), Primitives.type_string.serialise(name)).response)
+		except RemoteCallException as e:
+			TestDaemon.Exceptions.throw(e)
+	
 	def _handle_tick_event(self, params):
 		args = [
 			Primitives.type_uint32.deserialise(params[0]),

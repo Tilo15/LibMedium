@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     os.mkdir(out_dir)
 
-    builder = builder_class(model.namespace, model.class_name, out_dir)
+    builder = builder_class(model.namespace, model.class_name, model.socket_location, out_dir)
 
     builder.create_interface(model.models, model.exceptions, model.methods, model.events)
 

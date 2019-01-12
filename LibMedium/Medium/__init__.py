@@ -17,7 +17,7 @@ class Medium:
         self._responses = {}
 
         # Connect to the socket
-        self._socket.connect(LibMedium.Util.get_socket_address(self.daemon.namespace))
+        self._socket.connect(LibMedium.Util.get_socket_address(self.daemon.namespace, self.daemon.base_folder))
 
         # Make sure the daemon is responsive
         self._send_message(b"\x01")

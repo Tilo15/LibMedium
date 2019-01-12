@@ -5,13 +5,17 @@ import LibMedium.Util
 import socket
 import threading
 import rx
+import os
 
 class Listener:
     def __init__(self, daemon: Daemon):
         self.daemon = daemon
         self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        LibMedium.Util.create_socket_dir(self.daemon.namespace)
-        self._socket.bind(LibMedium.Util.get_socket_address(self.daemon.namespace))
+        LibMedium.Util.create_socket_dir(self.daemon.namespace, self.daemon.base_folder)
+        socket_path = LibMedium.Util.get_socket_address(self.daemon.namespace, self.daemon.base_folder)
+        self._socket.bind(socket_path)
+        os.chmod(socket_path, 666)
+
         self.new_connection = rx.subjects.Subject()
         self.invoked = rx.subjects.Subject()
         self._running = True
