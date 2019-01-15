@@ -88,15 +88,16 @@ class SpecificationModel:
                 d, value = self._read_until_first("\n", ":")
 
                 return_type = None
-                
                 if(d == "\n" and len(value) != 0):
                     raise Exception("Expected newline or ':' after ')' but got '%s'" % value)
 
                 elif(d == ":"):
                     return_type = self._read_until("\n")
 
-                if(return_type and return_type not in self.types):
-                    raise Exception("No such primitive or defined model '%s'" % label)
+
+                if(return_type):
+                    # Will trigger error if return type doesn't exist XXX
+                    self._get_type_instance("", return_type)
 
                 self._register_name(name)
 
@@ -170,8 +171,12 @@ class SpecificationModel:
 
                 
     def _get_type_instance(self, name, label):
-        if(label in self.types):
+        if(label[0] == "*"):
+            return type_array(name, self._get_type_instance("", label[1:]))
+
+        elif(label in self.types):
             return self.types[label](name)
+            
         else:
             raise Exception("No such primitive or defined model '%s'" % label)
 

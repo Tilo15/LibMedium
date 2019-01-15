@@ -5,6 +5,7 @@ from LibMedium.Messages.Event import Event
 
 import time
 import struct
+import typing
 
 daemon = Daemon("com.pcthingz.libmedium.test")
 

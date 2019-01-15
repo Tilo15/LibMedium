@@ -1,0 +1,22 @@
+namespace com.pcthingz.libmedium.arrays
+class ArrayDaemon
+
+event tick(ticks: *uint32)
+
+model ShoppingListItem{
+    item: string
+    quantity: uint8
+}
+
+model ShoppingList{
+    store: string
+    items: *ShoppingListItem
+}
+
+method new_list(items: *string): ShoppingList
+
+method get_list_items(list: ShoppingList): *ShoppingListItem
+
+method get_lists_item_names(lists: *ShoppingList): *string
+
+method get_2d_array(start: uint32): **uint32

@@ -15,6 +15,17 @@ model TestModelWrapper{
     value: TestModel
 }
 
+model Message{
+    id: uint32
+    body: string
+    references: *string
+}
+
+model MessageTransaction{
+    dest: string
+    messages: *Message
+}
+
 method hello_world(): binary
 
 method error_maker()
@@ -22,3 +33,9 @@ method error_maker()
 method delay_echo(message: binary): binary
 
 method wrapper(data: TestModel, name: string): TestModelWrapper
+
+method bulk_wrap(data: *TestModel, name: string): *TestModelWrapper
+
+method strings(lots: *string): *uint8
+
+method lots_of_transactions(txns: *MessageTransaction): boolean

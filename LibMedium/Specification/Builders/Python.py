@@ -17,18 +17,22 @@ class PythonBuilder(Builder):
         "float": "float",
         "double": "float",
         "string": "str",
-        "binary": "bytes"
+        "binary": "bytes",
     }
 
     def get_type(self, type_name):
-        if(type_name in self.type_map):
+        if(type_name[0] == "*"):
+            return "list"
+        elif(type_name in self.type_map):
             return self.type_map[type_name]
         else:
             return type_name
 
 
     def get_type_abs(self, type_name):
-        if(type_name in self.type_map):
+        if(type_name[0] == "*"):
+            return "list"
+        elif(type_name in self.type_map):
             return self.type_map[type_name]
         else:
             return "%s.Models.%s" % (self.class_name, type_name)
@@ -42,23 +46,34 @@ class PythonBuilder(Builder):
         
 
     def get_serialiser_by_label(self, label, value):
-        if(label in self.type_map):
+        if(label[0] == "*"):
+            return "Primitives.type_array.serialise([%s for x in %s])" % (self.get_serialiser_by_label(label[1:], "x"), value)
+        
+        elif(label in self.type_map):
             return "Primitives.type_%s.serialise(%s)" % (label, value)
+
         else:
             return "%s.serialise()" % value
 
 
     def get_deserialiser(self, type_name, value):
-        if(type_name in self.type_map):
+        if(type_name[0] == "*"):
+            return "[%s for x in Primitives.type_array.deserialise(%s)]" % (self.get_deserialiser(type_name[1:], "x"), value)
+
+        elif(type_name in self.type_map):
             return "Primitives.type_%s.deserialise(%s)" % (type_name, value)
         else:
             return "%s.deserialise(%s)" % (self.get_type_abs(type_name), value)
 
     def get_deserialiser_relative(self, type_name, value):
+        if(type_name[0] == "*"):
+            return "[%s for x in Primitives.type_array.deserialise(%s)]" % (self.get_deserialiser_relative(type_name[1:], "x"), value)
+
         if(type_name in self.type_map):
             return "Primitives.type_%s.deserialise(%s)" % (type_name, value)
         else:
             return "%s.deserialise(%s)" % (self.get_type(type_name), value)
+
 
 
     def create_interface(self, models, exceptions, methods, events):

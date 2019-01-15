@@ -1,4 +1,5 @@
 from LibMedium.Specification.Item import Item
+import LibMedium.Util
 import struct
 
 class type_boolean(Item):
@@ -159,3 +160,19 @@ class type_binary(Item):
     @staticmethod
     def deserialise(item):
         return item
+
+
+class type_array(Item):
+    def __init__(self, name, inner_type):
+        self.name = name
+        self.inner_type = inner_type
+        self.label = "*%s" % inner_type.label
+
+    @staticmethod
+    def serialise(items):
+        return LibMedium.Util.pack_list(items)
+            
+
+    @staticmethod
+    def deserialise(items):
+        return LibMedium.Util.unpack_list(items)
