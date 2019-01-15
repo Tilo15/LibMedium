@@ -7,7 +7,7 @@ from LibMedium.Specification.Item.Primitives import *
 
 class SpecificationModel:
     def __init__(self, spec: str):
-        self._spec = "\n".join([s for s in spec.splitlines() if s and not s.isspace()]) + "\n"
+        self._spec = "\n".join([s for s in spec.splitlines() if s and not s.isspace() and not s.strip().startswith("//")]) + "\n"
 
         self.namespace = ""
         self.class_name = ""

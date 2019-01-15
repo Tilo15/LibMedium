@@ -1,6 +1,8 @@
 namespace com.pcthingz.libmedium.arrays
 class ArrayDaemon
 
+// This is a comment
+
 event tick(ticks: *uint32)
 
 model ShoppingListItem{
