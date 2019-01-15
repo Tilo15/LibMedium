@@ -3,6 +3,7 @@ from LibMedium.Medium.Listener import Listener
 from LibMedium.Medium.Listener.Application import InvocationEvent
 from LibMedium.Medium.Listener.Application import Application
 from LibMedium.Messages.Event import Event
+from LibMedium.Util.Defer import Defer
 from LibMedium.Specification.Item import Primitives
 
 import ArrayDaemon.Exceptions
@@ -43,6 +44,12 @@ class ArrayDaemonServerBase:
 				except:
 					pass
 	
+	def _convert_exception(self, e: Exception):
+		error_num = 0
+		if(type(e) in ArrayDaemon.Exceptions.REV_ERROR_MAP):
+			error_num = ArrayDaemon.Exceptions.REV_ERROR_MAP[type(e)]
+		return (str(e), error_num)
+	
 	def _handle_new_list_invocation(self, event):
 		values = [
 			[Primitives.type_string.deserialise(x) for x in Primitives.type_array.deserialise(event.invocation.args[0])]
@@ -50,13 +57,14 @@ class ArrayDaemonServerBase:
 		
 		try:
 			result = self.new_list(*values)
-			event.complete(result.serialise())
+			serialise_result = lambda x: x.serialise()
+			if(type(result) is Defer):
+				result._attach(event, serialise_result, self._convert_exception)
+			else:
+				event.complete(serialise_result(result))
 		
 		except Exception as e:
-			error_num = 0
-			if(type(e) in ArrayDaemon.Exceptions.REV_ERROR_MAP):
-				error_num = ArrayDaemon.Exceptions.REV_ERROR_MAP[type(e)]
-			event.error(str(e), error_num)
+			event.error(*self._convert_exception(e))
 	
 	def _handle_get_list_items_invocation(self, event):
 		values = [
@@ -65,13 +73,14 @@ class ArrayDaemonServerBase:
 		
 		try:
 			result = self.get_list_items(*values)
-			event.complete(Primitives.type_array.serialise([x.serialise() for x in result]))
+			serialise_result = lambda x: Primitives.type_array.serialise([x.serialise() for x in x])
+			if(type(result) is Defer):
+				result._attach(event, serialise_result, self._convert_exception)
+			else:
+				event.complete(serialise_result(result))
 		
 		except Exception as e:
-			error_num = 0
-			if(type(e) in ArrayDaemon.Exceptions.REV_ERROR_MAP):
-				error_num = ArrayDaemon.Exceptions.REV_ERROR_MAP[type(e)]
-			event.error(str(e), error_num)
+			event.error(*self._convert_exception(e))
 	
 	def _handle_get_lists_item_names_invocation(self, event):
 		values = [
@@ -80,13 +89,14 @@ class ArrayDaemonServerBase:
 		
 		try:
 			result = self.get_lists_item_names(*values)
-			event.complete(Primitives.type_array.serialise([Primitives.type_string.serialise(x) for x in result]))
+			serialise_result = lambda x: Primitives.type_array.serialise([Primitives.type_string.serialise(x) for x in x])
+			if(type(result) is Defer):
+				result._attach(event, serialise_result, self._convert_exception)
+			else:
+				event.complete(serialise_result(result))
 		
 		except Exception as e:
-			error_num = 0
-			if(type(e) in ArrayDaemon.Exceptions.REV_ERROR_MAP):
-				error_num = ArrayDaemon.Exceptions.REV_ERROR_MAP[type(e)]
-			event.error(str(e), error_num)
+			event.error(*self._convert_exception(e))
 	
 	def _handle_get_2d_array_invocation(self, event):
 		values = [
@@ -95,13 +105,14 @@ class ArrayDaemonServerBase:
 		
 		try:
 			result = self.get_2d_array(*values)
-			event.complete(Primitives.type_array.serialise([Primitives.type_array.serialise([Primitives.type_uint32.serialise(x) for x in x]) for x in result]))
+			serialise_result = lambda x: Primitives.type_array.serialise([Primitives.type_array.serialise([Primitives.type_uint32.serialise(x) for x in x]) for x in x])
+			if(type(result) is Defer):
+				result._attach(event, serialise_result, self._convert_exception)
+			else:
+				event.complete(serialise_result(result))
 		
 		except Exception as e:
-			error_num = 0
-			if(type(e) in ArrayDaemon.Exceptions.REV_ERROR_MAP):
-				error_num = ArrayDaemon.Exceptions.REV_ERROR_MAP[type(e)]
-			event.error(str(e), error_num)
+			event.error(*self._convert_exception(e))
 	
 
 	

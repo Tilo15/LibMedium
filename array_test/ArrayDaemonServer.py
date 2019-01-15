@@ -2,6 +2,11 @@ from ArrayDaemon.Server import ArrayDaemonServerBase
 import ArrayDaemon.Exceptions
 import ArrayDaemon.Models
 
+import time
+import threading
+
+from LibMedium.Util.Defer import Defer
+
 class ArrayDaemonServer(ArrayDaemonServerBase):
     
     def run(self):
@@ -21,7 +26,15 @@ class ArrayDaemonServer(ArrayDaemonServerBase):
     
     
     def get_list_items(self, list: ArrayDaemon.Models.ShoppingList) -> list:
-        return list.items
+        defer = Defer()
+        threading.Thread(target=self.defer_it, args=(defer, list.items)).start()
+        return defer
+
+
+    def defer_it(self, defer: Defer, return_value):
+        time.sleep(5)
+        defer.complete(return_value)
+
     
     
     def get_lists_item_names(self, lists: list) -> list:

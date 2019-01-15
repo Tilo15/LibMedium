@@ -275,6 +275,7 @@ class PythonBuilder(Builder):
         data += "from LibMedium.Medium.Listener.Application import InvocationEvent\n"
         data += "from LibMedium.Medium.Listener.Application import Application\n"
         data += "from LibMedium.Messages.Event import Event\n"
+        data += "from LibMedium.Util.Defer import Defer\n"
         data += "from LibMedium.Specification.Item import Primitives\n\n"
         data += "import %s.Exceptions\n" % self.class_name
         data += "import %s.Models\n\n" % self.class_name
@@ -319,6 +320,12 @@ class PythonBuilder(Builder):
         data += "\t\t\t\texcept:\n"
         data += "\t\t\t\t\tpass\n\t\n"
 
+        data += "\tdef _convert_exception(self, e: Exception):\n"
+        data += "\t\terror_num = 0\n"
+        data += "\t\tif(type(e) in %s.Exceptions.REV_ERROR_MAP):\n" % self.class_name
+        data += "\t\t\terror_num = %s.Exceptions.REV_ERROR_MAP[type(e)]\n" % self.class_name
+        data += "\t\treturn (str(e), error_num)\n\t\n"
+
         # Invocation handler functions
         for method in methods:
             data += "\tdef _handle_%s_invocation(self, event):\n" % method.name
@@ -336,14 +343,16 @@ class PythonBuilder(Builder):
             data += "\t\ttry:\n"
             data += "\t\t\tresult = self.%s(*values)\n" % method.name
             if(method.return_type):
-                data += "\t\t\tevent.complete(%s)\n\t\t\n" % self.get_serialiser_by_label(method.return_type, "result")
+                data += "\t\t\tserialise_result = lambda x: %s\n" % self.get_serialiser_by_label(method.return_type, "x")
             else:
-                data += "\t\t\tevent.complete(b'')\n"
+                data += "\t\t\tserialise_result = lambda x: b''\n"
+            data += "\t\t\tif(type(result) is Defer):\n"
+            data += "\t\t\t\tresult._attach(event, serialise_result, self._convert_exception)\n"
+            data += "\t\t\telse:\n"
+            data += "\t\t\t\tevent.complete(serialise_result(result))\n\t\t\n"
+            
             data += "\t\texcept Exception as e:\n"
-            data += "\t\t\terror_num = 0\n"
-            data += "\t\t\tif(type(e) in %s.Exceptions.REV_ERROR_MAP):\n" % self.class_name
-            data += "\t\t\t\terror_num = %s.Exceptions.REV_ERROR_MAP[type(e)]\n" % self.class_name
-            data += "\t\t\tevent.error(str(e), error_num)\n\t\n"
+            data += "\t\t\tevent.error(*self._convert_exception(e))\n\t\n"
 
         data += "\n\t\n"
 
