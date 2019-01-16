@@ -13,6 +13,7 @@ class Application:
         self._socket = sock
         self.alive = True
         self.invoked = rx.subjects.Subject()
+        self.closed = rx.subjects.Subject()
         
 
     def _send_message(self, raw_data: bytes):
@@ -65,9 +66,13 @@ class Application:
 
 
     def _listen(self):
-        while self.alive:
-            message = self._receive_message()
-            self._handle_message(message)
+        try:
+            while self.alive:
+                message = self._receive_message()
+                self._handle_message(message)
+        except:
+            self.alive = False
+            self.closed.on_next()
 
 
     def send_response(self, response: Response):
