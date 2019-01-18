@@ -15,7 +15,7 @@ class type_boolean(Item):
 
     @staticmethod
     def deserialise(item):
-        return struct.unpack("!B", value)[0] == 255
+        return struct.unpack("!B", item)[0] == 255
 
 
 class type_int8(Item):

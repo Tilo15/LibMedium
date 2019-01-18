@@ -171,7 +171,7 @@ class PythonBuilder(Builder):
         data += "ERROR_MAP = {\n"
         
         for exception in exceptions:
-            data += "\t%i: %s\n" % (exception.code, exception.name)
+            data += "\t%i: %s,\n" % (exception.code, exception.name)
 
         data += "}\n\n\n"
 
@@ -182,7 +182,7 @@ class PythonBuilder(Builder):
 
         data += "REV_ERROR_MAP = {\n"
         for exception in exceptions:
-            data += "\t%s: %u\n" % (exception.name, exception.code)
+            data += "\t%s: %u,\n" % (exception.name, exception.code)
         data += "}\n\n\n"
 
         return data
@@ -279,6 +279,7 @@ class PythonBuilder(Builder):
         data += "from LibMedium.Specification.Item import Primitives\n\n"
         data += "import %s.Exceptions\n" % self.class_name
         data += "import %s.Models\n\n" % self.class_name
+        data += "import traceback\n\n"
 
 
         data += "class %sServerBase:\n" % self.class_name
@@ -321,10 +322,9 @@ class PythonBuilder(Builder):
         data += "\t\t\t\t\tpass\n\t\n"
 
         data += "\tdef _convert_exception(self, e: Exception):\n"
-        data += "\t\terror_num = 0\n"
         data += "\t\tif(type(e) in %s.Exceptions.REV_ERROR_MAP):\n" % self.class_name
-        data += "\t\t\terror_num = %s.Exceptions.REV_ERROR_MAP[type(e)]\n" % self.class_name
-        data += "\t\treturn (str(e), error_num)\n\t\n"
+        data += "\t\t\treturn (str(e), %s.Exceptions.REV_ERROR_MAP[type(e)])\n" % self.class_name
+        data += "\t\treturn ('Remote traceback follows:\\n\\n' + traceback.format_exc(), 0)\n\t\n"
 
         # Invocation handler functions
         for method in methods:
@@ -341,7 +341,7 @@ class PythonBuilder(Builder):
                 data += "\n\t\t]\n\t\t\n"
 
             data += "\t\ttry:\n"
-            data += "\t\t\tresult = self.%s(*values)\n" % method.name
+            data += "\t\t\tresult = self.%s(event.application, *values)\n" % method.name
             if(method.return_type):
                 data += "\t\t\tserialise_result = lambda x: %s\n" % self.get_serialiser_by_label(method.return_type, "x")
             else:
@@ -379,7 +379,7 @@ class PythonBuilder(Builder):
 
         # Abstratct method calls
         for method in methods:
-            data += "\tdef %s(self" % method.name
+            data += "\tdef %s(self, caller: Application" % method.name
             for paramater in method.paramaters:
                 data += ", "
                 data += "%s: %s" % (paramater.name, self.get_type_abs(paramater.label))
@@ -399,7 +399,9 @@ class PythonBuilder(Builder):
         return data
 
     def _create_server_template(self, methods):
-        data = "from %s.Server import %sServerBase\n" % (self.class_name, self.class_name)
+        data = "from LibMedium.Medium.Listener.Application import Application\n"
+        data += "from LibMedium.Util.Defer import Defer\n"
+        data += "from %s.Server import %sServerBase\n" % (self.class_name, self.class_name)
         data += "import %s.Exceptions\n" % self.class_name
         data += "import %s.Models\n\n" % self.class_name
 
@@ -416,7 +418,7 @@ class PythonBuilder(Builder):
         data += "    # Below are all the method calls you will need to handle.\n"
         
         for method in methods:
-            data += "    def %s(self" % method.name
+            data += "    def %s(self, caller: Application" % method.name
             for paramater in method.paramaters:
                 data += ", "
                 data += "%s: %s" % (paramater.name, self.get_type_abs(paramater.label))
