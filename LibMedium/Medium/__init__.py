@@ -33,12 +33,16 @@ class Medium:
             raise IOError("Daemon sent unexpected response to summon request")
 
         # Start listening for messages in a different thread
-        threading.Thread(target=self._listen).start()
+        self._listener_thread = threading.Thread(target=self._listen)
+        self._listener_thread.start()
 
 
     def invoke(self, method_name: bytes, *args) -> Response:
         if(not self.alive):
             raise IOError("The connection to the daemon is not active")
+
+        if(threading.current_thread() == self._listener_thread):
+            raise threading.ThreadError("Invoking a remote method is not allowed from the listener thread")
 
         call = uuid.uuid4()
         invocation = Invocation.Invocation(method_name, call, *args)
