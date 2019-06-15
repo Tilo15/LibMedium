@@ -89,7 +89,11 @@ class Medium:
             header = self._socket.recv(8)
 
         message_size = struct.unpack("!Q", header)[0]
-        return self._socket.recv(message_size)
+        msg = b""
+        while(len(msg) != message_size):
+            msg += self._socket.recv(message_size)
+
+        return msg
 
 
     def _handle_message(self, message: bytes):

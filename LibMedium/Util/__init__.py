@@ -32,5 +32,5 @@ def unpack_list(data: bytes):
         size = struct.unpack("!I", message[0:4])[0]
         list_data.append(message[4:size+4])
         message = message[size+4:]
-
+        
     return list_data
